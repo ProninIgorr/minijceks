@@ -8,24 +8,24 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/ProninIgorr/minijceks/jceks"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/lwithers/minijks/jks"
 	"github.com/urfave/cli/v2"
 )
 
 var UnpackCommand = &cli.Command{
 	Name:      "unpack",
 	Usage:     "unpack a keystore file into a directory",
-	ArgsUsage: "keystore.jks",
+	ArgsUsage: "keystore.jceks",
 	Action:    Unpack,
 }
 
 func init() {
-	UnpackCommand.Flags = addJksOptsFlags(UnpackCommand.Flags)
+	UnpackCommand.Flags = addJceksOptsFlags(UnpackCommand.Flags)
 }
 
 func Unpack(c *cli.Context) error {
@@ -46,19 +46,19 @@ func Unpack(c *cli.Context) error {
 		out = c.Args().Get(0) + ".d"
 	}
 
-	opts, err := jksOptsFlags(c)
+	opts, err := jceksOptsFlags(c)
 	if err != nil {
 		return err
 	}
 	return unpack(opts, c.Args().Get(0), out)
 }
 
-func unpack(opts *jks.Options, filename, outdir string) error {
+func unpack(opts *jceks.Options, filename, outdir string) error {
 	raw, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return err
 	}
-	ks, err := jks.Parse(raw, opts)
+	ks, err := jceks.Parse(raw, opts)
 	// any error will be returned below, after unpacking ks
 
 	if ks != nil {
@@ -82,7 +82,7 @@ func unpack(opts *jks.Options, filename, outdir string) error {
 	return err
 }
 
-func unpackInto(opts *jks.Options, ks *jks.Keystore, outdir string) error {
+func unpackInto(opts *jceks.Options, ks *jceks.Keystore, outdir string) error {
 	var retErr error
 	reportErr := func(err error) {
 		if err != nil {
@@ -92,7 +92,7 @@ func unpackInto(opts *jks.Options, ks *jks.Keystore, outdir string) error {
 	}
 
 	if opts == nil {
-		opts = &jks.Options{
+		opts = &jceks.Options{
 			SkipVerifyDigest: true,
 		}
 	}

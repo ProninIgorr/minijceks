@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// Pack writes a JKS file. opts must be specified, and the SkipVerifyDigest
+// Pack writes a JCEKS file. opts must be specified, and the SkipVerifyDigest
 // option will be ignored. The password will always be taken from opts, and if
 // it is an empty string then an empty string will be used for the password.
 // This function requires that all certificates and private keys are present, so

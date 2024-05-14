@@ -14,7 +14,7 @@ const (
 	CertType        = "X.509"
 )
 
-// Keystore represents a single JKS file. It holds a list of certificates and a
+// Keystore represents a single JCEKS file. It holds a list of certificates and a
 // list of keypairs (private keys with associated certificate chains).
 type Keystore struct {
 	// Certs is a list of CA certificates to trust. It may contain either
@@ -31,7 +31,7 @@ type Keystore struct {
 // password(s) used, or to skip the digest verification if the password is
 // unknown.
 type Options struct {
-	// Password is used as part of a SHA-1 digest over the .jks file.
+	// Password is used as part of a SHA-1 digest over the .jceks file.
 	Password string
 
 	// SkipVerifyDigest can be set to skip digest verification when loading
@@ -142,7 +142,3 @@ func PasswordUTF16(passwd string) []byte {
 	}
 	return u
 }
-
-// Additional functions to parse, load, and save JCEKS keystore would be implemented here.
-// This includes handling secret keys, using appropriate cryptographic algorithms for JCEKS,
-// and ensuring compatibility with the JCEKS format specifications.

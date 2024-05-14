@@ -5,6 +5,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/ProninIgorr/minijceks/jceks"
 	"io"
 	"io/ioutil"
 	"os"
@@ -12,14 +13,13 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/lwithers/minijks/jks"
 	"github.com/urfave/cli/v2"
 )
 
 var PackCommand = &cli.Command{
 	Name:      "pack",
 	Usage:     "pack a directory into a keystore file",
-	ArgsUsage: "in.d out.jks",
+	ArgsUsage: "in.d out.jceks",
 	Action:    Pack,
 }
 
@@ -71,8 +71,8 @@ func pack(out io.Writer, inDir string) error {
 
 	var (
 		err  error
-		ks   jks.Keystore
-		opts = jks.Options{
+		ks   jceks.Keystore
+		opts = jceks.Options{
 			KeyPasswords: make(map[string]string),
 		}
 	)
@@ -140,7 +140,7 @@ func packPassword(dirname string) (string, error) {
 	return string(p), nil
 }
 
-func packCerts(opts *jks.Options, ks *jks.Keystore, certDir string) error {
+func packCerts(opts *jceks.Options, ks *jceks.Keystore, certDir string) error {
 	f, err := ioutil.ReadDir(certDir)
 	if err != nil {
 		return err
@@ -161,7 +161,7 @@ func packCerts(opts *jks.Options, ks *jks.Keystore, certDir string) error {
 
 		alias := filepath.Base(fi.Name())
 		alias = alias[:len(alias)-4] // strip ".pem"
-		ks.Certs = append(ks.Certs, &jks.Cert{
+		ks.Certs = append(ks.Certs, &jceks.Cert{
 			Alias:     alias,
 			Timestamp: fi.ModTime(),
 			Cert:      cert,
@@ -170,8 +170,8 @@ func packCerts(opts *jks.Options, ks *jks.Keystore, certDir string) error {
 	return nil
 }
 
-func packKeypair(opts *jks.Options, dir string) (*jks.Keypair, error) {
-	kp := &jks.Keypair{
+func packKeypair(opts *jceks.Options, dir string) (*jceks.Keypair, error) {
+	kp := &jceks.Keypair{
 		Alias: filepath.Base(dir),
 	}
 
@@ -228,7 +228,7 @@ func packKeypair(opts *jks.Options, dir string) (*jks.Keypair, error) {
 			return nil, err
 		}
 
-		kp.CertChain = append(kp.CertChain, &jks.KeypairCert{
+		kp.CertChain = append(kp.CertChain, &jceks.KeypairCert{
 			Cert: cert,
 		})
 	}

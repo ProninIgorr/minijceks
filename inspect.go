@@ -9,11 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lwithers/minijks/jks"
+	"github.com/ProninIgorr/minijceks/jceks"
+
 	"github.com/urfave/cli/v2"
 )
 
-func addJksOptsFlags(in []cli.Flag) []cli.Flag {
+func addJceksOptsFlags(in []cli.Flag) []cli.Flag {
 	return append(in,
 		&cli.StringFlag{
 			Name:  "password",
@@ -26,8 +27,8 @@ func addJksOptsFlags(in []cli.Flag) []cli.Flag {
 	)
 }
 
-func jksOptsFlags(c *cli.Context) (*jks.Options, error) {
-	opts := &jks.Options{
+func jceksOptsFlags(c *cli.Context) (*jceks.Options, error) {
+	opts := &jceks.Options{
 		KeyPasswords: make(map[string]string),
 	}
 	if c.IsSet("password") {
@@ -48,12 +49,12 @@ func jksOptsFlags(c *cli.Context) (*jks.Options, error) {
 var InspectCommand = &cli.Command{
 	Name:      "inspect",
 	Usage:     "inspect the contents of a keystore file",
-	ArgsUsage: "keystore.jks",
+	ArgsUsage: "keystore.jceks",
 	Action:    Inspect,
 }
 
 func init() {
-	InspectCommand.Flags = addJksOptsFlags(InspectCommand.Flags)
+	InspectCommand.Flags = addJceksOptsFlags(InspectCommand.Flags)
 }
 
 func Inspect(c *cli.Context) error {
@@ -69,21 +70,21 @@ func Inspect(c *cli.Context) error {
 		return errors.New("can only inspect one file")
 	}
 
-	opts, err := jksOptsFlags(c)
+	opts, err := jceksOptsFlags(c)
 	if err != nil {
 		return err
 	}
 	return inspect(opts, c.Args().Get(0))
 }
 
-func inspect(opts *jks.Options, filename string) error {
+func inspect(opts *jceks.Options, filename string) error {
 	fmt.Printf("======== %s ========\n", filename)
 
 	raw, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return err
 	}
-	ks, err := jks.Parse(raw, opts)
+	ks, err := jceks.Parse(raw, opts)
 	// any error will be returned below, after printing anything from ks
 
 	if ks != nil {
@@ -100,10 +101,10 @@ func inspect(opts *jks.Options, filename string) error {
 		}
 	}
 
-	return err // error from jks.Parse
+	return err // error from jceks.Parse
 }
 
-func inspectCert(cert *jks.Cert) {
+func inspectCert(cert *jceks.Cert) {
 	c := cert.Cert
 	fmt.Printf("Alias:\t\t%q\n", cert.Alias)
 	fmt.Printf("Timestamp:\t%s\n", cert.Timestamp.Format(time.RFC3339Nano))
@@ -156,7 +157,7 @@ func inspectPublicKey(pfx string, pub interface{}) {
 	}
 }
 
-func inspectKeypair(kp *jks.Keypair) {
+func inspectKeypair(kp *jceks.Keypair) {
 	fmt.Printf("Alias:\t\t%q\n", kp.Alias)
 	fmt.Printf("Timestamp:\t%s\n", kp.Timestamp.Format(time.RFC3339Nano))
 	if kp.PrivKeyErr != nil {

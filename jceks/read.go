@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// Parse a JKS file. If desired, opts may be specified to provide more control
+// Parse a JCEKS file. If desired, opts may be specified to provide more control
 // over the parsing. If nil, then we will use an empty password when attempting
 // to decrypt keys and will not attempt to verify the digest stored in the file.
 //
