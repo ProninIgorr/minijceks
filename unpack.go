@@ -8,11 +8,12 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/ProninIgorr/minijceks/jceks"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/ProninIgorr/minijceks/jceks"
 
 	"github.com/urfave/cli/v2"
 )

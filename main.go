@@ -11,7 +11,7 @@ func main() {
 	app := &cli.App{
 		Name:    "minijceks",
 		Version: "1.1.0",
-		Usage:   "inspect, unpack and pack Java keystore files",
+		Usage:   "inspect, unpack and pack JCEKS",
 		Commands: []*cli.Command{
 			InspectCommand,
 			UnpackCommand,

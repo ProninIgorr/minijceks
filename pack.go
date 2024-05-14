@@ -5,13 +5,14 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/ProninIgorr/minijceks/jceks"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/ProninIgorr/minijceks/jceks"
 
 	"github.com/urfave/cli/v2"
 )

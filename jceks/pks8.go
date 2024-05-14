@@ -75,41 +75,45 @@ type PrivateKeyInfo struct {
 // DecryptPKCS8 decrypts a PKCS#8 EncryptedPrivateKeyInfo, presumably returning
 // a marshalled PrivateKeyInfo structure. It only knows how to handle the two
 // encryption algorithms that are used by the Java keytool program.
-// DecryptPKCS8 декодирует зашифрованный закрытый ключ PKCS#8 в формате JCEKS.
 func DecryptPKCS8(raw []byte, password string) ([]byte, error) {
-	// Распарсить ASN.1 структуру и убедиться, что нет лишних данных
+	// unmarshal the ASN.1 structure, ensure there's no trailing data
 	var keyInfo EncryptedPrivateKeyInfo
 	rest, err := asn1.Unmarshal(raw, &keyInfo)
 	if err != nil {
-		return nil, errors.New("неверная структура закрытого ключа PKCS#8")
+		// asn1 package errors are not actually that helpful
+		return nil, errors.New("malformed PKCS#8 private key structure")
 	}
 	if len(rest) != 0 {
-		return nil, errors.New("лишние данные после закрытого ключа PKCS#8")
+		return nil, errors.New("trailing data after PKCS#8 private key")
 	}
 
-	// Проверить, что алгоритм шифрования соответствует JCEKS
 	switch {
 	case keyInfo.Algo.Algorithm.Equal(JavaKeyEncryptionOID1):
-		// Этот алгоритм не имеет параметров
+		// this algorithm doesn't have any parameters
 		if len(keyInfo.Algo.Parameters.Bytes) != 0 {
-			return nil, errors.New("неожидаемые параметры алгоритма")
+			return nil, errors.New("unexpected algorithm " +
+				"params present")
 		}
-		// Расшифровать с использованием кастомного алгоритма JCEKS
-		return DecryptJavaKeyEncryption1(keyInfo.EncryptedData, password)
+		return DecryptJavaKeyEncryption1(keyInfo.EncryptedData,
+			password)
+
+	case keyInfo.Algo.Algorithm.Equal(JavaKeyEncryptionOID2):
+		return nil, errors.New("not implemented yet")
 
 	default:
-		return nil, fmt.Errorf("неподдерживаемый алгоритм шифрования %v",
+		return nil, fmt.Errorf("unhandled encryption algorithm %v",
 			keyInfo.Algo.Algorithm)
 	}
 }
 
-// MarshalPKCS8 маршализует закрытый ключ в структуру PKCS#8 в формате JCEKS.
+// MarshalPKCS8 marshals an RSA or EC private key into an (unencrypted)
+// PKCS#8 PrivateKeyInfo structure. It returns the DER-encoded structure.
 func MarshalPKCS8(key interface{}) ([]byte, error) {
 	var ki PrivateKeyInfo
-
 	switch key := key.(type) {
 	case *rsa.PrivateKey:
-		// Записываем закрытый ключ в PKCS#1 формат
+		// we simply put the PKCS#1-encoded key into a wrapper that
+		// says it's an RSA key
 		ki.Algo = pkix.AlgorithmIdentifier{
 			Algorithm:  oidPublicKeyRSA,
 			Parameters: asn1NULL,
@@ -117,35 +121,37 @@ func MarshalPKCS8(key interface{}) ([]byte, error) {
 		ki.PrivateKey = x509.MarshalPKCS1PrivateKey(key)
 
 	case *ecdsa.PrivateKey:
-		// Параметры для алгоритма EC должны содержать информацию о кривой
+		// the PKCS#8 wrapper (PrivateKeyInfo) has algorithm set to
+		// identify the elliptic curve key, but needs a parameter to
+		// state the curve.
 		c, err := oidFromNamedCurve(key)
 		if err != nil {
 			return nil, err
 		}
+
 		ki.Algo = pkix.AlgorithmIdentifier{
 			Algorithm: oidPublicKeyECDSA,
 		}
 		ki.Algo.Parameters.FullBytes, err = asn1.Marshal(c)
 		if err != nil {
-			return nil, fmt.Errorf("ошибка при маршализации параметров EC: %v", err)
+			return nil, fmt.Errorf("marshal EC private key "+
+				"params: %v", err)
 		}
 
-		// Маршализуем закрытый ключ EC
 		ki.PrivateKey, err = x509.MarshalECPrivateKey(key)
 		if err != nil {
-			return nil, fmt.Errorf("ошибка при маршализации закрытого ключа EC: %v", err)
+			return nil, fmt.Errorf("marshal EC private key: %v",
+				err)
 		}
 
 	default:
-		return nil, fmt.Errorf("неподдерживаемый тип закрытого ключа %T", key)
+		return nil, fmt.Errorf("unhandled private key type %T", key)
 	}
 
-	// Маршализуем структуру PKCS#8
 	raw, err := asn1.Marshal(ki)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка при маршализации PrivateKeyInfo: %v", err)
+		return nil, fmt.Errorf("marshal PrivateKeyInfo: %v", err)
 	}
-
 	return raw, nil
 }
 

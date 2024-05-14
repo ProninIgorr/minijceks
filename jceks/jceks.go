@@ -1,7 +1,7 @@
 package jceks
 
 import (
-	"crypto/sha256"
+	"crypto/sha1"
 	"crypto/x509"
 	"time"
 	"unicode/utf16"
@@ -113,11 +113,16 @@ var defaultOptions = Options{
 	SkipVerifyDigest: true,
 }
 
-// ComputeDigest performs a SHA-256 hash over the given file data.
+// ComputeDigest performs the custom hash function over the given file data.
+// DO NOT RE-USE THIS CODE: this is an atrocious way to perform message
+// authentication. Use the HMAC example from
+// https://github.com/lwithers/go-crypto-examples instead. Note this construct
+// is vulnerable to a length extension attack, which is actually exploitable if
+// the JCEKS reader code does not properly check the "number of entries" value.
 func ComputeDigest(raw []byte, passwd string) []byte {
-	// compute SHA-256 digest over the construct:
+	// compute SHA-1 digest over the construct:
 	//  UTF-16(password) + UTF-8(DigestSeparator) + raw
-	md := sha256.New()
+	md := sha1.New()
 	p := PasswordUTF16(passwd)
 	md.Write(p)
 	md.Write([]byte(DigestSeparator))
@@ -125,7 +130,7 @@ func ComputeDigest(raw []byte, passwd string) []byte {
 	return md.Sum(nil)
 }
 
-// PasswordUTF16 remains unchanged as it correctly implements UTF-16 encoding.
+// PasswordUTF16 returns a password encoded in UTF-16, big-endian byte order.
 func PasswordUTF16(passwd string) []byte {
 	var u []byte
 	for _, r := range passwd {
