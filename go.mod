@@ -2,10 +2,7 @@ module github.com/ProninIgorr/minijceks
 
 go 1.19
 
-require (
-	github.com/lwithers/minijks v1.1.0
-	github.com/urfave/cli/v2 v2.27.2
-)
+require github.com/urfave/cli/v2 v2.27.2
 
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
