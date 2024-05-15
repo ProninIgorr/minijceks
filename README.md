@@ -1,4 +1,4 @@
-#JCEKS
+# JCEKS
 
 # minijceks Java keytool replacement
 
