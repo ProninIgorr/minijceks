@@ -1,3 +1,7 @@
+/*
+Package jceks provides routines for manipulating JCEKS Keystore File.
+*/
+
 package jceks
 
 import (
@@ -8,10 +12,20 @@ import (
 )
 
 const (
-	jceksMagic      = 0xcececece
-	jceksVersion    = 0x02
+	// jceksMagig is written at the start of each .jks file.
+	jceksMagic = 0xcececece
+
+	jceksVersion = 0x02
+
+	// DigestSeparator is used to build the file's verification digest. The
+	// digest is over the keystore password encoded as UTF-16, then this
+	// string (yes, really — check the OpenJDK source) encoded as UTF-8, and
+	// then the actual file data.
 	DigestSeparator = "Mighty Aphrodite"
-	CertType        = "X.509"
+
+	// CertType is the certificate type string that is encoded into each
+	// certificate's header in the keystore.
+	CertType = "X.509"
 )
 
 // Keystore represents a single JCEKS file. It holds a list of certificates and a

@@ -1,3 +1,7 @@
+/*
+Package jceks provides routines for manipulating JCEKS Keystore File.
+*/
+
 package jceks
 
 import (
